@@ -474,13 +474,22 @@ Free models have lower rate limits and may be slower at busy times, so occasiona
 
 ## Testing
 
-Unit tests for JWT creation and validation (no database needed):
+Unit tests run without a database or Spring context (JUnit 5, Mockito, AssertJ):
+
+| Test class | What it covers |
+|---|---|
+| `security/JwtServiceTest` | Token creation and parsing; rejection of tampered, foreign-key, expired and weak-key tokens |
+| `service/TaskServiceTest` | Task visibility, personal vs team task rules, assignee must be a team member, who may edit / change status / delete, list parameter validation |
+| `service/TeamServiceTest` | Creator becomes OWNER; team access checks (404 for missing team, 403 for non-members and non-owners) |
+| `service/InvitationServiceTest` | Owner-only invites, self / duplicate / existing-member checks, only the invited user can answer, an invitation can be answered once |
+
+Run the unit tests:
 
 ```bash
-mvn test -Dtest=JwtServiceTest
+mvn test -Dtest="*ServiceTest"
 ```
 
-The full test suite also includes `TaskmasterApplicationTests`, which starts the whole application, so it needs PostgreSQL running and the `DB_USERNAME` / `DB_PASSWORD` environment variables set:
+The full suite also includes `TaskmasterApplicationTests`, which starts the whole application, so it needs PostgreSQL running and the `DB_USERNAME` / `DB_PASSWORD` environment variables set:
 
 ```bash
 mvn test
@@ -507,6 +516,6 @@ mvn test
 - **Single instance:** SSE connections are held in memory. Running several instances would need a shared broker such as Redis Pub/Sub.
 - **Local file storage:** attachments are stored on the server's disk; cloud object storage (e.g. Amazon S3) would suit production better.
 - **Refresh tokens:** users log in again when the access token expires.
-- **More tests:** integration tests for controllers and services (for example with Testcontainers).
+- **More tests:** controller and repository integration tests against a real database (for example with Testcontainers).
 - **API documentation UI:** OpenAPI / Swagger UI could be added.
 - **Team management:** removing members, transferring ownership and deleting teams are not yet implemented.
